@@ -1,0 +1,61 @@
+#NAME: OMOLE-ADEBOMI STEVEN
+#PROJECT: Electronic Voting System using Server-Client Socket Communication in Python
+#DOB:29th of July
+#FIlETYPE: Server File
+import socket as soc
+import time
+ip = input("Enter The Address To Pole")
+startTime = time.time()
+#ip = "127.0.0.1"
+NoOfRegisteredVoters = int(input("Enter Number of Registered Voters: "))
+port = 8080
+def serverSetUp(ip,port):
+    socketCreate = soc.socket(soc.AF_INET,soc.SOCK_STREAM,0) #SocType,SocFamily,socProtocol
+    print("Voting Pole Created\n")
+    socBind= socketCreate.bind((ip,port)) #bind port to IP
+    slisten = socketCreate.listen(NoOfRegisteredVoters)
+    print("Waiting for",NoOfRegisteredVoters,"People To Votes")
+
+    NoOfConnectedVoters = []
+    NameOfVoters = []
+    Votes = {}
+    revote = 1
+    while(revote <= NoOfRegisteredVoters):
+        if(len(Votes.keys()) != NoOfRegisteredVoters):
+            addr, s = socketCreate.accept()
+            voterName = soc.gethostbyaddr(s[0])[0]
+            if(addr and voterName not in Votes.keys()):
+                NoOfConnectedVoters.append(s)
+                vote = str(addr.recv(1024))[2:5]
+                Votes[voterName] = vote
+                addr.send(b"Vote Made")
+
+                print("One Vote Just made\n")
+                #break
+
+            else:
+                print(voterName,"Voted Already\n")
+                addr.send(b"Voted Already")
+            #print(NoOfConnectedVoters)
+            #print(addr)
+        else:
+            break
+        revote += 1 #to be removed later and passed true to the while
+    totalVotes = len(Votes.keys())
+    part = []
+    for parties in Votes.values():
+        part.append(str(parties))
+    result = {}
+    for parties1 in part:
+        result[parties1] = part.count(parties1)
+    print("Statistics of Votes\n")
+    print('Total Votes:',totalVotes,'\n')
+    for results in result:
+        print(results,'Total Votes:',result[results],'\n')
+    print("Total Time spent in Seconds is:",round(time.time()-startTime,2))
+
+
+try:
+    serverSetUp(ip,port)
+except:
+    print("Server Busy,Trying Using an IP which is not in Use")
