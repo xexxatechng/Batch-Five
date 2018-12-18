@@ -1,1 +1,1 @@
-Demo repository
+Gbagada projects repository
